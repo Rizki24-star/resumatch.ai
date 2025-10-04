@@ -1,0 +1,40 @@
+// nuxt.config.ts
+export default defineNuxtConfig({
+  $production: {
+    routeRules: {
+      "/**": { isr: true },
+    },
+  },
+  $development: {
+    runtimeConfig: {
+      apiSecret: "12345",
+      public: {
+        apiBase: "/api",
+      },
+    },
+    typescript: {
+      strict: true,
+      typeCheck: false,
+    },
+  },
+  $env: {
+    $staging: {},
+  },
+  compatibilityDate: "2025-07-15",
+  devtools: { enabled: true },
+  modules: ["vuetify-nuxt-module", "@nuxt/fonts"],
+  //   css: ["@/app/assets/scss/variable.scss"],
+  vuetify: {
+    moduleOptions: {},
+  },
+  fonts: {
+    families: [
+      {
+        name: "Inter",
+        provider: "google",
+        weights: [400, 500, 600, 700, 800],
+        display: "swap",
+      },
+    ],
+  },
+});
