@@ -9,9 +9,9 @@
             <DashboardTabNav />
 
             <!-- Page content -->
-            <v-container class="pa-6">
+            <div class="content position-relative">
                 <slot />
-            </v-container>
+            </div>
         </v-main>
 
         <!-- Footer -->
@@ -19,4 +19,14 @@
     </v-app>
 </template>
 
-<style scoped></style>
+<style scoped>
+* {
+    background-color: rgb(245, 250, 249);
+}
+
+.content {
+    margin: 40px 160px 0 160px;
+    padding: 0;
+    /* background-color: ; */
+}
+</style>

@@ -1,7 +1,7 @@
 <template>
-    <v-tabs grow bg-color="grey-lighten-4" height="48" class="px-6 custom-tabs">
+    <v-tabs grow bg-color="" height="48" class="px-6 custom-tabs">
         <v-tab to="/dashboard">Dashboard</v-tab>
-        <v-tab to="/ai">AI Demo</v-tab>
+        <v-tab to="/dashboard/analyzer">AI Demo</v-tab>
         <v-tab to="/settings">Settings</v-tab>
     </v-tabs>
 </template>

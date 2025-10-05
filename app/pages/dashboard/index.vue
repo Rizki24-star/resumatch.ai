@@ -1,6 +1,10 @@
 <template>
+    <div class="content">
+        <h1>Welcome Rizki Okto!</h1>
+        <span class="text-grey">This demo shows an example integration of the OpenAI API</span>
+    </div>
     <div>
-        <h1>Dashboard</h1>
+
     </div>
 </template>
 
@@ -10,6 +14,4 @@ definePageMeta({
 })
 </script>
 
-<style>
-
-</style>
+<style scoped></style>

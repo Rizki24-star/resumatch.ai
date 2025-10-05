@@ -1,22 +1,23 @@
 <template>
-    <v-app-bar app flat class="app-bar">
-        <v-toolbar-title class="d-flex align-center">
-            <v-icon icon="mdi-cube-outline" class="me-2 text-green" />
-            <span class="font-weight-bold" color="#43A047">resumatch.ai</span>
-        </v-toolbar-title>
+    <nav app flat class="app-bar d-flex justify-content-between align-center">
+        <div class="d-flex align-center gap-2">
+            <v-icon icon="mdi-cube-outline" class="text-green" />
+            <h2 class="font-weight-bold" color="#43A047">resumatch.ai</h2>
+        </div>
 
-        <v-spacer />
+        <!-- <v-spacer /> -->
 
         <!-- User Avatar -->
-        <v-avatar color="primary" size="36">
+        <v-avatar color="primary" size="36" class="ms-auto">
             <span>R</span>
         </v-avatar>
-    </v-app-bar>
+    </nav>
 </template>
 
 <style scoped>
 .app-bar {
-    margin-left: 160px;
-    margin-right: 160px;
+    margin: 0 160px 0 160px;
+    padding: 15px 0 15px 0;
+    background-color: #ffffff;
 }
 </style>
