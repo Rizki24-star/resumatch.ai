@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { bg } from 'vuetify/locale';
 import IcimageScanning from '~/assets/images/ic-document-scanning2.gif';
+import { AIResponseFormat } from '~/constants';
 
 definePageMeta({
     layout: 'dashboard'
 })
+
+const puterStore = usePuterStore()
+const router = useRouter()
 
 const formRef = ref<HTMLFormElement | null>(null);
 const isFormValid = ref(false);
@@ -14,6 +19,7 @@ const jobTitle = ref('')
 const jobDescription = ref('')
 
 const statusText = ref('')
+const isFailed = ref(false)
 const isProcessing = ref(false)
 
 const resumeFile = ref<File | null | undefined>(null);
@@ -70,20 +76,102 @@ const submitForm = async () => {
         return;
     }
     console.log('Submitting file:', resumeFile.value.name);
-    statusText.value = "Uploading information"
-    await delay(2000);
-    statusText.value = "Analyzing..."
-    await delay(2000);
-    statusText.value = "Finish feedback and redirect..."
-    await delay(2000);
-    try {
-
-    } catch (error) {
-
-    } finally {
-        isProcessing.value = false
-    }
+    handleAnalyze({ companyName: companyName.value, jobTitle: jobTitle.value, jobDescription: jobDescription.value, file: resumeFile.value });
 };
+
+
+const handleAnalyze = async (
+    {
+        companyName,
+        jobTitle,
+        jobDescription,
+        file,
+    }: {
+        companyName: string;
+        jobTitle: string;
+        jobDescription: string;
+        file: File;
+    }
+) => {
+    isProcessing.value = true;
+    statusText.value = "Uploading the file...";
+
+    const uploadedFile = await puterStore.upload([file]);
+    if (!uploadedFile) {
+        statusText.value = "Error: Failed to upload file";
+        isFailed.value = true
+        return;
+    }
+
+    statusText.value = "Converting to image..."
+    const imageFile = await convertPdfToImage(file);
+    if (!imageFile.file) {
+        statusText.value = "Error: Failed to convert PDF to image";
+        isFailed.value = true
+        return;
+    }
+
+    statusText.value = "Uploading to image..."
+    const uploadedImage = await puterStore.upload([imageFile.file])
+    if (!uploadedImage) {
+        statusText.value = "Error: Failed to upload image";
+        isFailed.value = true
+        return;
+    }
+
+    statusText.value = "Preparing data...";
+    const uuid = generateUUID();
+    const data = {
+        id: uuid,
+        resumePath: uploadedFile.path,
+        imagePath: uploadedImage.path,
+        companyName,
+        jobTitle,
+        jobDescription,
+        feedback: "",
+    };
+
+    await puterStore.setKV(`resume:${uuid}`, JSON.stringify(data));
+
+    statusText.value = "Analyzing...";
+    const feedback = await puterStore.feedback(
+        uploadedFile.path,
+        `You are an expert in ATS (Applicant Tracking System) and resume analysis.
+    Please analyze and rate this resume and suggest how to improve it.
+    The rating can be low if the resume is bad.
+    Be thorough and detailed. Don't be afraid to point out any mistakes or areas for improvement.
+    If there is a lot to improve, don't hesitate to give low scores. This is to help the user to improve their resume.
+    If available, use the job description for the job user is applying to to give more detailed feedback.
+    If provided, take the job description into consideration.
+    The job title is: ${jobTitle}
+    The job description is: ${jobDescription}
+    Provide the feedback using the following format:
+    ${AIResponseFormat}
+    Return the analysis as an JSON object, without any other text and without the backticks.
+    Do not include any other text or comments.`
+    );
+
+    if (!feedback) {
+        console.error("Feedback error:", feedback)
+        statusText.value = "Error: Failed to analyze resume";
+        isFailed.value = true
+        return;
+    }
+
+    console.log('AI feedback:', feedback); // Check response
+
+    const feedbackText =
+        typeof feedback.message.content === "string"
+            ? feedback.message.content
+            : feedback.message.content[0].text;
+    data.feedback = JSON.parse(feedbackText);
+
+    await puterStore.setKV(`resume:${uuid}`, JSON.stringify(data));
+    statusText.value = "Analysis complete, redirecting...";
+
+    router.push(`/dashboard/${uuid}/review`);
+
+}
 
 const clearFile = () => {
     resumeFile.value = null;
@@ -137,6 +225,7 @@ const clearFile = () => {
         <v-container class="d-flex flex-column justify-center align-center pa-12 h-100 m-auto">
             <h1 class="text-grey-darken-4 text-h3"> Smart feedback for your dream job! </h1>
             <span class="mt-4 text-h5  text-grey"> {{ statusText }}</span>
+            <v-btn class="bg-black text-white mt-4" v-if="isFailed" @click="isProcessing = false">Back</v-btn>
             <div class="image-scanning">
                 <img :src="IcimageScanning" alt="Upload Icon" width="280" height="280" />
             </div>

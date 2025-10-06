@@ -1,17 +1,111 @@
 <template>
     <div class="content">
         <h1>Welcome Rizki Okto!</h1>
-        <span class="text-grey">This demo shows an example integration of the OpenAI API</span>
+        <span class="text-grey">See the latest stats of your awesome resume.</span>
     </div>
-    <div>
 
-    </div>
+    <v-container class="mt-6">
+        <v-row v-if="isLoading">
+            <v-col cols="12" class="text-center py-12">
+                <v-progress-circular indeterminate color="primary" size="48"></v-progress-circular>
+            </v-col>
+        </v-row>
+
+        <v-row v-else-if="resumes.length === 0">
+            <v-col cols="12">
+                <v-card class="pa-8 text-center">
+                    <v-icon size="64" color="grey">mdi-file-document-outline</v-icon>
+                    <p class="text-h6 mt-4 text-grey">No analyzed resumes yet</p>
+                    <p class="text-grey">Upload your first resume to get started</p>
+                    <v-btn class="mt-4" color="primary" to="/dashboard/analyzer">
+                        Analyze Resume
+                    </v-btn>
+                </v-card>
+            </v-col>
+        </v-row>
+
+        <v-row v-else>
+            <v-col v-for="resume in resumes" :key="resume.id" cols="12" md="6" lg="4">
+                <v-card class="pa-4" hover>
+                    <div class="d-flex justify-space-between align-center mb-3">
+                        <h3 class="text-h6">{{ resume.jobTitle || 'Untitled' }}</h3>
+                        <v-chip :color="getScoreColor(resume.feedback?.overallScore || 0)" size="small">
+                            {{ resume.feedback?.overallScore || 0 }}%
+                        </v-chip>
+                    </div>
+
+                    <p class="text-grey text-body-2 mb-2">{{ resume.companyName }}</p>
+
+                    <v-divider class="my-3"></v-divider>
+
+                    <div class="d-flex justify-space-between align-center">
+                        <span class="text-caption text-grey">
+                            {{ formatDate(resume.createdAt) }}
+                        </span>
+                        <v-btn :to="`/dashboard/${resume.id}/review`" variant="tonal" size="small">
+                            View Details
+                        </v-btn>
+                    </div>
+                </v-card>
+            </v-col>
+        </v-row>
+    </v-container>
 </template>
 
 <script setup lang="ts">
 definePageMeta({
     layout: 'dashboard'
 })
+
+const puterStore = usePuterStore();
+
+const resumes = ref<any[]>([]);
+const isLoading = ref(true);
+
+const getScoreColor = (score: number) => {
+    if (score >= 70) return 'green';
+    if (score >= 50) return 'orange';
+    return 'red';
+};
+
+const formatDate = (timestamp: number) => {
+    if (!timestamp) return 'Recently';
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+onMounted(async () => {
+    try {
+        const keys = await puterStore.listKV('resume:*', true);
+        console.log('KV keys:', keys);
+
+        if (keys && Array.isArray(keys)) {
+            resumes.value = keys
+                .map((item: any) => {
+                    try {
+                        const data = typeof item === 'string' ? JSON.parse(item) : JSON.parse(item.value);
+                        return {
+                            ...data,
+                            createdAt: Date.now() // Add timestamp if not stored
+                        };
+                    } catch (e) {
+                        console.error('Failed to parse resume:', e);
+                        return null;
+                    }
+                })
+                .filter((r: any) => r !== null)
+                .sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
+        }
+    } catch (error) {
+        console.error('Error loading resumes:', error);
+    } finally {
+        isLoading.value = false;
+    }
+});
 </script>
 
-<style scoped></style>
+<style scoped>
+.content {
+    margin-bottom: 1rem;
+}
+</style>

@@ -1,5 +1,10 @@
 // nuxt.config.ts
 export default defineNuxtConfig({
+  app: {
+    head: {
+      script: [{ src: "https://js.puter.com/v2/" }],
+    },
+  },
   $production: {
     routeRules: {
       "/**": { isr: true },
@@ -22,11 +27,7 @@ export default defineNuxtConfig({
   },
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  modules: [
-    "vuetify-nuxt-module",
-    "@nuxt/fonts",
-    "@nuxt/image",
-  ],
+  modules: ["vuetify-nuxt-module", "@nuxt/fonts", "@nuxt/image", "@pinia/nuxt"],
   //   css: ["@/app/assets/scss/variable.scss"],
   vuetify: {
     moduleOptions: {},
