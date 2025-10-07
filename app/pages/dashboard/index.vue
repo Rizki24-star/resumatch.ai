@@ -7,17 +7,18 @@
     <v-container class="mt-6">
         <v-row v-if="isLoading">
             <v-col cols="12" class="text-center py-12">
-                <v-progress-circular indeterminate color="primary" size="48"></v-progress-circular>
+                <v-progress-circular indeterminate color="green" :bg-color="`green-lighten-4`"
+                    size="48"></v-progress-circular>
             </v-col>
         </v-row>
 
         <v-row v-else-if="resumes.length === 0">
             <v-col cols="12">
-                <v-card class="pa-8 text-center">
-                    <v-icon size="64" color="grey">mdi-file-document-outline</v-icon>
+                <v-card class="pa-8 text-center" elevation="0">
+                    <v-icon size="64" color="green">mdi-file-document-outline</v-icon>
                     <p class="text-h6 mt-4 text-grey">No analyzed resumes yet</p>
                     <p class="text-grey">Upload your first resume to get started</p>
-                    <v-btn class="mt-4" color="primary" to="/dashboard/analyzer">
+                    <v-btn class="mt-4" color="black" to="/dashboard/analyzer">
                         Analyze Resume
                     </v-btn>
                 </v-card>
@@ -29,9 +30,14 @@
                 <v-card class="pa-4" hover>
                     <div class="d-flex justify-space-between align-center mb-3">
                         <h3 class="text-h6">{{ resume.jobTitle || 'Untitled' }}</h3>
-                        <v-chip :color="getScoreColor(resume.feedback?.overallScore || 0)" size="small">
-                            {{ resume.feedback?.overallScore || 0 }}%
-                        </v-chip>
+                        <div class="d-flex ga-2 align-center">
+                            <v-chip :color="getScoreColor(resume.feedback?.overallScore || 0)" size="small">
+                                {{ resume.feedback?.overallScore || 0 }}%
+                            </v-chip>
+                            <v-btn icon="mdi-delete" size="small" variant="text" color="error"
+                                @click="deleteResume(resume.id)">
+                            </v-btn>
+                        </div>
                     </div>
 
                     <p class="text-grey text-body-2 mb-2">{{ resume.companyName }}</p>
@@ -74,10 +80,21 @@ const formatDate = (timestamp: number) => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-onMounted(async () => {
+const deleteResume = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this resume analysis?')) return;
+
+    try {
+        await puterStore.deleteKV(`resume:${id}`);
+        resumes.value = resumes.value.filter(r => r.id !== id);
+    } catch (error) {
+        console.error('Error deleting resume:', error);
+        alert('Failed to delete resume');
+    }
+};
+
+const loadResumes = async () => {
     try {
         const keys = await puterStore.listKV('resume:*', true);
-        console.log('KV keys:', keys);
 
         if (keys && Array.isArray(keys)) {
             resumes.value = keys
@@ -86,7 +103,7 @@ onMounted(async () => {
                         const data = typeof item === 'string' ? JSON.parse(item) : JSON.parse(item.value);
                         return {
                             ...data,
-                            createdAt: Date.now() // Add timestamp if not stored
+                            createdAt: Date.now()
                         };
                     } catch (e) {
                         console.error('Failed to parse resume:', e);
@@ -101,11 +118,9 @@ onMounted(async () => {
     } finally {
         isLoading.value = false;
     }
+};
+
+onMounted(() => {
+    loadResumes();
 });
 </script>
-
-<style scoped>
-.content {
-    margin-bottom: 1rem;
-}
-</style>

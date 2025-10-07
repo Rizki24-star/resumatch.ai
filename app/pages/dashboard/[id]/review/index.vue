@@ -321,7 +321,8 @@ const getScoreLabel = (score: number) => {
             <!-- Loading state -->
             <v-row v-else>
                 <v-col cols="12" class="d-flex justify-center align-center" style="min-height: 400px;">
-                    <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+                    <v-progress-circular color="green" :bg-color="`green-lighten-4`" indeterminate
+                        size="64"></v-progress-circular>
                 </v-col>
             </v-row>
         </v-main>
