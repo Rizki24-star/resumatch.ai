@@ -14,7 +14,7 @@ export default defineNuxtConfig({
     runtimeConfig: {
       apiSecret: "12345",
       public: {
-        apiBase: "/api",
+        apiBase: process.env.NUXT_PUBLIC_API_BASE || "https://default.com",
       },
     },
     typescript: {

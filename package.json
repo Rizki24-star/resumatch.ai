@@ -1,39 +1,35 @@
 {
-  "name": "nuxt-app",
-  "type": "module",
+  "name": "resumatch-ai",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
-    "lint": "eslint . --ext .js,.ts,.vue",
-    "lint:fix": "eslint . --ext .js,.ts,.vue --fix",
-    "format": "prettier --write ."
+    "dev": "pnpm --parallel dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "build": "pnpm --recursive build"
   },
   "dependencies": {
-    "@mdi/font": "^7.4.47",
-    "@nuxt/image": "1.11.0",
-    "@pinia/nuxt": "^0.11.2",
-    "install": "^0.13.0",
-    "nuxt": "^4.1.2",
-    "pdfjs-dist": "^5.4.296",
-    "pinia": "^3.0.3",
-    "sass": "^1.93.2",
-    "vue": "^3.5.22",
-    "vue-router": "^4.5.1",
-    "vuetify": "^3.10.4",
-    "vuetify-nuxt-module": "^0.18.7"
+    "@langchain/core": "^0.3.78",
+    "@langchain/google-genai": "^0.2.18",
+    "@types/multer": "^2.0.0",
+    "@types/pdf-parse": "^1.1.5",
+    "cloudinary": "^2.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "langchain": "^0.3.35",
+    "mongoose": "^8.19.1",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "pdf-parse": "^2.1.10"
   },
-  "packageManager": "pnpm@10.18.0+sha512.e804f889f1cecc40d572db084eec3e4881739f8dec69c0ff10d2d1beff9a4e309383ba27b5b750059d7f4c149535b6cd0d2cb1ed3aeb739239a4284a68f40cfa",
   "devDependencies": {
-    "@nuxt/fonts": "^0.11.4",
-    "@nuxtjs/eslint-config-typescript": "^12.1.0",
-    "eslint": "^9.37.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "prettier": "^3.6.2",
-    "vue-tsc": "^3.1.0"
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.7.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
   }
 }
