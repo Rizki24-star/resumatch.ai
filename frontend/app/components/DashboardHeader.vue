@@ -1,8 +1,9 @@
 <template>
   <nav app flat class="app-bar d-flex justify-content-between align-center">
     <div class="d-flex align-center gap-2">
-      <v-icon icon="mdi-cube-outline" class="text-green" />
-      <h2 class="font-weight-bold" color="#43A047">resumatch.ai</h2>
+      <span class="text-h5 font-weight-bold text-black"
+        >resumatch.<strong class="text-green">ai</strong></span
+      >
     </div>
 
     <!-- User Avatar -->

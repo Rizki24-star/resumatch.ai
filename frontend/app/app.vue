@@ -1,19 +1,23 @@
 <script setup lang="ts">
-const puterStore = usePuterStore()
+const puterStore = usePuterStore();
 
 onMounted(() => {
-    puterStore.init()
-})
+  puterStore.init();
+});
 </script>
 
 <template>
-    <NuxtLayout>
+  <v-app>
+    <v-main>
+      <NuxtLayout>
         <NuxtPage />
-    </NuxtLayout>
+      </NuxtLayout>
+    </v-main>
+  </v-app>
 </template>
 
 <style>
 * {
-    font-family: Inter;
+  font-family: Inter;
 }
 </style>
