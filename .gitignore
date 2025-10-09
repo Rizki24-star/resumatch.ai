@@ -1,25 +1,19 @@
-# pnpm
-.pnpm-store/
-pnpm-lock.yaml
-
 # Dependencies
 node_modules/
+.pnpm-store/
 
-# Environment
+# Build
+dist/
+.output/
+.nuxt/
+
+# Env
 .env
-.env.*
-!.env.example
-
-# Logs
-*.log
+.env.local
 
 # OS
 .DS_Store
 
-# Backend
-backend/dist/
-backend/uploads/
-
-# Frontend
-frontend/.output/
-frontend/.nuxt/
+# IDE
+.vscode/
+.idea/

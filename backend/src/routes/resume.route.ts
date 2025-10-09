@@ -1,7 +1,7 @@
 import { Router } from "express";
-import * as resumeController from "../controller/resume.controller";
+import * as resumeController from "../controller/resume.controller.js";
 import multer from "multer";
-import { authenticate } from "../middleware/auth.middleware";
+import { authenticate } from "../middleware/auth.middleware.js";
 
 const router: Router = Router();
 
