@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import User from "../models/User";
-import { generateToken } from "../utils/jwt";
-import { AuthRequest } from "../middleware/auth.middleware";
+import User from "../models/User.js";
+import { generateToken } from "../utils/jwt.js";
+import { AuthRequest } from "../middleware/auth.middleware.js";
 
 export const googleAuth = async (req: Request, res: Response) => {
   try {

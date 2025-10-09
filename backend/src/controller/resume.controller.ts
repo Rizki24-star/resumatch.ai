@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import Resume from "../models/Resume";
-import { analyzeResume } from "../services/ai.service";
-import { extractTextFromPDF } from "../utils/pdf";
-import { uploadPDF } from "../services/storage.service";
+import Resume from "../models/Resume.js";
+import { analyzeResume } from "../services/ai.service.js";
+import { extractTextFromPDF } from "../utils/pdf.js";
+import { uploadPDF } from "../services/storage.service.js";
 import path from "path";
 import fs from "fs/promises";
 

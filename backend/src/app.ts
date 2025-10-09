@@ -3,14 +3,14 @@ import express, {
   type Request,
   type Response,
 } from "express";
-import { connectMongoDB } from "./config/mongodb";
+import { connectMongoDB } from "./config/mongodb.js";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import resumeRouter from "./routes/resume.route";
-import authRouter from "./routes/auth.route";
+import resumeRouter from "./routes/resume.route.js";
+import authRouter from "./routes/auth.route.js";
 import "dotenv/config";
-import "./config/cloudinary";
+import "./config/cloudinary.js";
 
 const app: Application = express();
 
@@ -28,6 +28,6 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/resume", resumeRouter);
-app.use("/api/auth", authRouter);
+app.use("/api/user-auth", authRouter);
 
 export default app;

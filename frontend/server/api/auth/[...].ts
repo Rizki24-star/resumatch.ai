@@ -52,7 +52,7 @@ export default NuxtAuthHandler({
         const baseApiUrl = config.public.apiBase || "http://localhost:3001";
 
         const response: AuthResponse = await $fetch(
-          `${baseApiUrl}/auth/google`,
+          `${baseApiUrl}/user-auth/google`,
           {
             method: "POST",
             body: {
@@ -85,7 +85,7 @@ export default NuxtAuthHandler({
           const baseApiUrl = config.public.apiBase || "http://localhost:3001";
 
           const response: AuthResponse = await $fetch(
-            `${baseApiUrl}/auth/google`,
+            `${baseApiUrl}/user-auth/google`,
             {
               method: "POST",
               body: {

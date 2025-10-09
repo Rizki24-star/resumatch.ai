@@ -1,6 +1,6 @@
 import { pdf } from "pdf-parse";
 import fs from "fs/promises";
-import "../config/cloudinary";
+import "../config/cloudinary.js";
 
 export async function extractTextFromPDF(filePath: string): Promise<string> {
   const dataBuffer = await fs.readFile(filePath);

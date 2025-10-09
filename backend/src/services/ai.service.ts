@@ -2,7 +2,7 @@ import {
   createLLM,
   resumePromptTemplate,
   feedbackSchema,
-} from "../config/langchain";
+} from "../config/langchain.js";
 
 function extractJSONFromMarkdown(text: string): string {
   const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);

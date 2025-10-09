@@ -15,14 +15,13 @@ export default defineNuxtConfig({
   runtimeConfig: {
     apiSecret: process.env.AUTH_SECRET,
     public: {
-      apiBase:
-        process.env.NUXT_PUBLIC_API_BASE ||
-        "https://resumatch-ai-gamma.vercel.app/api",
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || "/api",
     },
     authSecret: process.env.AUTH_SECRET,
     googleClientId: process.env.GOOGLE_CLIENT_ID,
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   },
+
   auth: {
     isEnabled: true,
     disableServerSideAuth: false,
