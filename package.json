@@ -1,12 +1,16 @@
 {
-  "name": "resumatch-monorepo",
-  "private": true,
-  "scripts": {
-    "dev:frontend": "cd frontend && pnpm dev",
-    "dev:backend": "cd backend && pnpm dev",
-    "build:frontend": "cd frontend && pnpm build",
-    "build:backend": "cd backend && pnpm build",
-    "vercel-build": "pnpm install && pnpm build:backend && pnpm build:frontend"
-  },
-  "packageManager": "pnpm@9.0.0"
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": "frontend/.output/public",
+  "rewrites": [
+    {
+      "source": "/api/resume/:path*",
+      "destination": "/api/resume-handler"
+    },
+    {
+      "source": "/api/user-auth/:path*",
+      "destination": "/api/user-auth-handler"
+    }
+  ]
 }

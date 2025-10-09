@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "cd backend && pnpm install && pnpm build && cd ../frontend && pnpm install && pnpm build",
-  "installCommand": "echo 'skip'",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
   "outputDirectory": "frontend/.output/public",
   "rewrites": [
     {
