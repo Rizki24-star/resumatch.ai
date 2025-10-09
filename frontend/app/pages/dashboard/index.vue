@@ -1,10 +1,12 @@
 <script setup lang="ts">
 definePageMeta({
   layout: "dashboard",
+  middleware: ["sidebase-auth"],
 });
 
+const { data: session } = useAuth();
+
 const config = useRuntimeConfig();
-const puterStore = usePuterStore();
 
 const resumes = ref<any[]>([]);
 const isLoading = ref(true);
@@ -31,8 +33,16 @@ const deleteResume = async (id: string) => {
   if (!confirm("Are you sure you want to delete this resume analysis?")) return;
 
   try {
-    await puterStore.deleteKV(`resume:${id}`);
-    resumes.value = resumes.value.filter((r) => r.id !== id);
+    const token = session.value?.token;
+
+    await $fetch(`${config.public.apiBase}/resume/${id}`, {
+      method: "delete",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    resumes.value = resumes.value.filter((r) => r._id !== id);
   } catch (error) {
     console.error("Error deleting resume:", error);
     alert("Failed to delete resume");
@@ -41,8 +51,21 @@ const deleteResume = async (id: string) => {
 
 const loadResumes = async () => {
   try {
+    const token = session.value?.token;
+
+    if (!token) {
+      queueMessage.value.push("Not authenticated");
+      return;
+    }
+
     const res: any = await $fetch(
-      `${config.public.apiBase}/${"we787fy8sd8f7hd8s"}`
+      `${config.public.apiBase}/resume/${session.value.user.id}`,
+      {
+        method: "get",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
     console.log("Success get resumes: ", res);
@@ -73,7 +96,7 @@ onMounted(() => {
 
 <template>
   <div class="content">
-    <h1>Welcome Rizki Okto!</h1>
+    <h1>Welcome {{ session?.user?.name }}!</h1>
     <span class="text-grey">See the latest stats of your awesome resume.</span>
   </div>
 

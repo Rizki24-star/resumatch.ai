@@ -10,14 +10,14 @@ declare module "express" {
   interface Request {
     user?: {
       id: string;
-      tenantId: string;
+      email: string;
     };
   }
 }
 
 export const createAnalyis = async (req: Request, res: Response) => {
   try {
-    const { companyName, jobTitle, jobDescription, user_id, tenant_id } =
+    const { companyName, jobTitle, jobDescription, userId, tenantId } =
       req.body;
 
     console.log("Request analysis: ", req.body);
@@ -47,8 +47,8 @@ export const createAnalyis = async (req: Request, res: Response) => {
     });
 
     const resume = new Resume({
-      userId: user_id,
-      tenantId: tenant_id,
+      userId: userId,
+      tenantId: tenantId,
       companyName,
       jobTitle,
       jobDescription,
@@ -79,8 +79,7 @@ export const createAnalyis = async (req: Request, res: Response) => {
 export const getResumes = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    console.log("Params : ", userId);
-    console.log("Getting resume by id", req.body);
+    console.log("Getting resume by  user id", userId);
     const resumes = await Resume.find({ userId }).sort({ createdAt: -1 });
 
     res.json({ succes: true, data: resumes });
@@ -92,17 +91,19 @@ export const getResumes = async (req: Request, res: Response) => {
 
 export const getResumeById = async (req: Request, res: Response) => {
   try {
-    const { user_id } = req.body;
+    const { userId, id } = req.params;
     const resume = await Resume.findOne({
-      _id: req.params.id,
-      userId: user_id,
+      _id: id,
+      userId: userId,
     });
+
+    console.log("Get resume by id: ", resume);
 
     if (!resume) {
       return res.status(404).json({ error: "Resume not found" });
     }
 
-    res.json({ succes: true, data: resume });
+    res.json({ success: true, data: resume });
   } catch (error: any) {
     console.error("Failed get resume by id: ", error);
     res.status(500).json({ error: error.message });

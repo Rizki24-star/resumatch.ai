@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { bg } from "vuetify/locale";
 import IcimageScanning from "~/assets/images/ic-document-scanning2.gif";
-import { AIResponseFormat } from "~/constants";
 
 definePageMeta({
   layout: "dashboard",
+  middleware: "sidebase-auth",
 });
 
+const { data: session } = useAuth();
 const config = useRuntimeConfig();
-
-const puterStore = usePuterStore();
 const router = useRouter();
 
 const formRef = ref<HTMLFormElement | null>(null);
@@ -31,7 +29,6 @@ const queueMessage = ref<string[]>([]);
 const fileDisplayInfo = computed(() => {
   if (resumeFile.value) {
     const name = resumeFile.value.name;
-    // Format size to mb
     const sizeMB = (resumeFile.value.size / (1024 * 1024)).toFixed(2);
     return `${name} (${sizeMB} MB)`;
   }
@@ -60,29 +57,25 @@ const resumeFileRules = [
   (v: File) => v.type === "application/pdf" || "Only PDF files are accepted",
 ];
 
-// Updates resumeFile and handles array/null input from v-file-input
 const handleFileChange = (files: File | File[] | null | undefined) => {
   if (files instanceof File) {
-    // Single
     resumeFile.value = files;
   } else if (Array.isArray(files) && files.length > 0) {
-    // Multiple
     resumeFile.value = files[0];
   } else {
     resumeFile.value = null;
   }
 };
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 const submitForm = async () => {
-  isProcessing.value = true;
   if (!isFormValid.value || !resumeFile.value) {
     (formRef.value as any)?.validate();
     return;
   }
+
   console.log("Submitting file:", resumeFile.value.name);
-  handleAnalyze({
+
+  await handleAnalyze({
     companyName: companyName.value,
     jobTitle: jobTitle.value,
     jobDescription: jobDescription.value,
@@ -102,114 +95,68 @@ const handleAnalyze = async ({
   file: File;
 }) => {
   isProcessing.value = true;
-  statusText.value = "Uploading the file...";
-
-  //   const uploadedFile = await puterStore.upload([file]);
-  //   if (!uploadedFile) {
-  //     statusText.value = "Error: Failed to upload file";
-  //     isFailed.value = true;
-  //     return;
-  //   }
-
-  //   statusText.value = "Converting to image...";
-  //   const imageFile = await convertPdfToImage(file);
-  //   if (!imageFile.file) {
-  //     statusText.value = "Error: Failed to convert PDF to image";
-  //     isFailed.value = true;
-  //     return;
-  //   }
-
-  //   statusText.value = "Uploading to image...";
-  //   const uploadedImage = await puterStore.upload([imageFile.file]);
-  //   if (!uploadedImage) {
-  //     statusText.value = "Error: Failed to upload image";
-  //     isFailed.value = true;
-  //     return;
-  //   }
-
-  statusText.value = "Preparing data...";
-  const uuid = generateUUID();
-  //   const data = {
-  //     id: uuid,
-  //     resumePath: uploadedFile.path,
-  //     imagePath: uploadedImage.path,
-  //     companyName,
-  //     jobTitle,
-  //     jobDescription,
-  //     feedback: "",
-  //   };
-
-  // await puterStore.setKV(`resume:${uuid}`, JSON.stringify(data));
-
-  statusText.value = "Analyzing...";
-  // const feedback = await puterStore.feedback(
-  //     uploadedFile.path,
-  //     `You are an expert in ATS (Applicant Tracking System) and resume analysis.
-  //     Please analyze and rate this resume and suggest how to improve it.
-  //     The rating can be low if the resume is bad.
-  //     Be thorough and detailed. Don't be afraid to point out any mistakes or areas for improvement.
-  //     If there is a lot to improve, don't hesitate to give low scores. This is to help the user to improve their resume.
-  //     If available, use the job description for the job user is applying to to give more detailed feedback.
-  //     If provided, take the job description into consideration.
-  //     The job title is: ${jobTitle}
-  //     The job description is: ${jobDescription}
-  //     Provide the feedback using the following format:
-  //     ${AIResponseFormat}
-  //     Return the analysis as an JSON object, without any other text and without the backticks.
-  //     Do not include any other text or comments.`
-  // );
-
-  //   if (!feedback) {
-  //     console.error("Feedback error:", feedback);
-  //     statusText.value = "Error: Failed to analyze resume";
-  //     isFailed.value = true;
-  //     return;
-  //   }
-
-  const formData = new FormData();
-  formData.append("resume", file);
-  formData.append("companyName", companyName);
-  formData.append("jobTitle", jobTitle);
-  formData.append("jobDescription", jobDescription);
-  formData.append("user_id", "we787fy8sd8f7hd8s");
-  formData.append("tenant_id", uuid);
+  isFailed.value = false;
+  statusText.value = "Uploading resume...";
 
   try {
-    const res: any = await $fetch(`${config.public.apiBase}/analyze`, {
-      method: "POST",
-      body: formData,
-    });
+    const token = session.value?.token;
 
-    if (!res.success) {
-      statusText.value = "Failed processing the request";
-      queueMessage.value.push("Something wrong, please try again");
+    if (!token) {
+      throw new Error("Not authenticated");
     }
 
-    console.log("AI feedback:", res.data); // Check response
+    const formData = new FormData();
+    formData.append("resume", file);
+    formData.append("companyName", companyName);
+    formData.append("jobTitle", jobTitle);
+    formData.append("jobDescription", jobDescription);
+    formData.append("userId", session.value.user.id);
+    formData.append("tenantId", generateUUID());
+
+    statusText.value = "Analyzing with AI...";
+
+    const res: any = await $fetch(`${config.public.apiBase}/resume/analyze`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("Analysis response:", res);
+
+    if (!res.success) {
+      throw new Error(res.error || "Failed to analyze resume");
+    }
+
     const feedback = res.data;
-    statusText.value = "Analysis complete, redirecting...";
+    statusText.value = "Analysis complete! Redirecting...";
+
+    // Small delay for UX
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     router.push(`/dashboard/${feedback.id}/review`);
-  } catch (error) {
-    statusText.value = "Internal server error";
-    queueMessage.value.push("Internal server error");
+  } catch (error: any) {
+    console.error("Analysis error:", error);
+    statusText.value = error.message || "Failed to analyze resume";
+    isFailed.value = true;
+    queueMessage.value.push(error.message || "Something went wrong");
   } finally {
-    isProcessing.value = false;
+    if (!isFailed.value) {
+      isProcessing.value = false;
+    }
   }
-};
-
-const clearFile = () => {
-  resumeFile.value = null;
 };
 </script>
 
 <template>
   <div class="content">
     <h1>AI Analyzer!</h1>
-    <span class="text-grey"
-      >Upload your resume for ATS score and smart feedback</span
-    >
+    <span class="text-grey">
+      Upload your resume for ATS score and smart feedback
+    </span>
   </div>
+
   <v-container class="bg-white p-4 mt-6 rounded-lg">
     <v-form
       ref="formRef"
@@ -236,6 +183,7 @@ const clearFile = () => {
         :rules="jobDescriptionRules"
         label="Job Description"
         variant="outlined"
+        rows="5"
       ></v-textarea>
 
       <label for="resume-upload" class="w-100 cursor-pointer">
@@ -271,37 +219,35 @@ const clearFile = () => {
         type="submit"
         variant="tonal"
         block
-        :disabled="!isFormValid"
+        :disabled="!isFormValid || isProcessing"
       >
-        Submit
+        {{ isProcessing ? "Analyzing..." : "Submit" }}
       </v-btn>
     </v-form>
   </v-container>
 
+  <!-- Processing Overlay -->
   <div
     v-if="isProcessing"
-    class="position-absolute top-0 right-0 w-100 h-100 bg-white"
+    class="position-fixed top-0 left-0 w-100 h-100 bg-white d-flex align-center justify-center"
+    style="z-index: 9999"
   >
-    <v-container
-      class="d-flex flex-column justify-center align-center pa-12 h-100 m-auto"
-    >
-      <h1 class="text-grey-darken-4 text-h3">
+    <v-container class="d-flex flex-column justify-center align-center pa-12">
+      <h1 class="text-grey-darken-4 text-h3 text-center">
         Smart feedback for your dream job!
       </h1>
-      <span class="mt-4 text-h5 text-grey"> {{ statusText }}</span>
+      <span class="mt-4 text-h5 text-grey text-center">{{ statusText }}</span>
+
       <v-btn
-        class="bg-black text-white mt-4"
         v-if="isFailed"
+        class="bg-black text-white mt-4"
         @click="isProcessing = false"
-        >Back</v-btn
       >
-      <div class="image-scanning">
-        <img
-          :src="IcimageScanning"
-          alt="Upload Icon"
-          width="280"
-          height="280"
-        />
+        Back
+      </v-btn>
+
+      <div v-else class="image-scanning mt-8">
+        <img :src="IcimageScanning" alt="Analyzing" width="280" height="280" />
       </div>
     </v-container>
   </div>
@@ -323,8 +269,6 @@ const clearFile = () => {
 
 .image-scanning {
   border-radius: 20px;
-  border-color: black;
   overflow: hidden;
-  margin-top: 100px;
 }
 </style>

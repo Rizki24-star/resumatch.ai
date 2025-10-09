@@ -5,18 +5,37 @@ export default defineNuxtConfig({
       script: [{ src: "https://js.puter.com/v2/" }],
     },
   },
-  $production: {
-    routeRules: {
-      "/**": { isr: true },
+  modules: [
+    "vuetify-nuxt-module",
+    "@nuxt/fonts",
+    "@nuxt/image",
+    "@pinia/nuxt",
+    "@sidebase/nuxt-auth",
+  ],
+  runtimeConfig: {
+    apiSecret: process.env.AUTH_SECRET,
+    public: {
+      apiBase:
+        process.env.NUXT_PUBLIC_API_BASE ||
+        "https://resumatch-ai-gamma.vercel.app/api",
+    },
+    authSecret: process.env.AUTH_SECRET,
+    googleClientId: process.env.GOOGLE_CLIENT_ID,
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  },
+  auth: {
+    isEnabled: true,
+    disableServerSideAuth: false,
+    baseURL: "/api/auth",
+    provider: {
+      type: "authjs",
+    },
+    sessionRefresh: {
+      enablePeriodically: true,
+      enableOnWindowFocus: true,
     },
   },
   $development: {
-    runtimeConfig: {
-      apiSecret: "12345",
-      public: {
-        apiBase: process.env.NUXT_PUBLIC_API_BASE || "https://default.com",
-      },
-    },
     typescript: {
       strict: true,
       typeCheck: false,
@@ -27,8 +46,6 @@ export default defineNuxtConfig({
   },
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  modules: ["vuetify-nuxt-module", "@nuxt/fonts", "@nuxt/image", "@pinia/nuxt"],
-  //   css: ["@/app/assets/scss/variable.scss"],
   vuetify: {
     moduleOptions: {},
   },

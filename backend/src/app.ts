@@ -8,6 +8,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import resumeRouter from "./routes/resume.route";
+import authRouter from "./routes/auth.route";
 import "dotenv/config";
 import "./config/cloudinary";
 
@@ -26,6 +27,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello from Express + TypeScript + pnpm!");
 });
 
-app.use("/api", resumeRouter);
+app.use("/api/resume", resumeRouter);
+app.use("/api/auth", authRouter);
 
 export default app;

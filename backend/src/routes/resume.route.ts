@@ -1,8 +1,11 @@
 import { Router } from "express";
 import * as resumeController from "../controller/resume.controller";
 import multer from "multer";
+import { authenticate } from "../middleware/auth.middleware";
 
 const router: Router = Router();
+
+router.use(authenticate);
 
 // setup multer
 const upload = multer({ dest: "uploads/" });
@@ -13,6 +16,6 @@ router.post(
   upload.single("resume"),
   resumeController.createAnalyis
 );
-router.post("/:id", resumeController.getResumeById);
+router.get("/:userId/:id", resumeController.getResumeById);
 
 export default router;

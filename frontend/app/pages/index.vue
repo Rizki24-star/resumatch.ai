@@ -1,3 +1,67 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+const showLoginModal = ref(false);
+
+const { signIn, signOut, data } = useAuth();
+
+const handleGoogleSignIn = () => {
+  try {
+    signIn("google");
+  } catch (error) {
+  } finally {
+    showLoginModal.value = false;
+  }
+};
+
+const features = [
+  {
+    icon: "mdi-flash",
+    title: "Instant Analysis",
+    description:
+      "Get comprehensive resume analysis within seconds using cutting-edge AI",
+  },
+  {
+    icon: "mdi-target",
+    title: "Job Matching",
+    description: "See how well your resume matches your target job description",
+  },
+  {
+    icon: "mdi-chart-line",
+    title: "Improvement Tips",
+    description:
+      "Specific and actionable recommendations to enhance your resume",
+  },
+  {
+    icon: "mdi-file-document",
+    title: "Detailed Scoring",
+    description:
+      "In-depth evaluation across multiple criteria important to recruiters",
+  },
+];
+
+const stats = [
+  { number: "50K+", label: "Resumes Analyzed" },
+  { number: "95%", label: "Satisfaction Rate" },
+  { number: "3x", label: "More Interviews" },
+  { number: "24/7", label: "Platform Access" },
+];
+
+const benefits = [
+  "Easy PDF resume upload",
+  "Fast and accurate AI analysis",
+  "Relevant keyword recommendations",
+  "Job description compatibility scores",
+  "Resume formatting and structure tips",
+];
+
+const steps = [
+  "Upload your PDF resume",
+  "Paste target job description",
+  "Get analysis & recommendations",
+];
+</script>
+
 <template>
   <div class="bg-white" style="min-height: 100vh">
     <!-- Navigation -->
@@ -16,7 +80,49 @@
           </v-col>
 
           <v-col cols="auto" class="d-flex align-center">
+            <div v-if="data" class="d-flex aligns-center ga-2">
+              <v-btn
+                class="transform hover:scale-105 text-white bg-black"
+                to="/dashboard"
+              >
+                Dashboard
+              </v-btn>
+              <!-- User Avatar -->
+              <v-menu>
+                <template #activator="{ props }">
+                  <nuxt-img
+                    v-bind="props"
+                    v-if="data?.user?.image"
+                    :src="data.user.image"
+                    class="rounded-pill cursor-pointer"
+                    width="35"
+                    height="35"
+                  />
+                </template>
+                <v-card width="200" class="pa-2">
+                  <v-list density="compact">
+                    <v-list-item>
+                      <v-list-item-title class="text-body-2">{{
+                        data?.user?.name || "User"
+                      }}</v-list-item-title>
+                      <v-list-item-subtitle class="text-caption">{{
+                        data?.user?.email
+                      }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider class="my-2"></v-divider>
+                    <v-list-item @click="signOut" class="text-error">
+                      <template #prepend>
+                        <v-icon size="small">mdi-logout</v-icon>
+                      </template>
+                      <v-list-item-title>Logout</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-card>
+              </v-menu>
+            </div>
+
             <v-btn
+              v-else
               color="green"
               class="green transform hover:scale-105"
               @click="showLoginModal = true"
@@ -377,65 +483,6 @@
     </v-dialog>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from "vue";
-
-const showLoginModal = ref(false);
-
-const handleGoogleSignIn = () => {
-  // TODO: Implement Google sign-in logic
-  console.log("Google sign-in clicked");
-  showLoginModal.value = false;
-};
-
-const features = [
-  {
-    icon: "mdi-flash",
-    title: "Instant Analysis",
-    description:
-      "Get comprehensive resume analysis within seconds using cutting-edge AI",
-  },
-  {
-    icon: "mdi-target",
-    title: "Job Matching",
-    description: "See how well your resume matches your target job description",
-  },
-  {
-    icon: "mdi-chart-line",
-    title: "Improvement Tips",
-    description:
-      "Specific and actionable recommendations to enhance your resume",
-  },
-  {
-    icon: "mdi-file-document",
-    title: "Detailed Scoring",
-    description:
-      "In-depth evaluation across multiple criteria important to recruiters",
-  },
-];
-
-const stats = [
-  { number: "50K+", label: "Resumes Analyzed" },
-  { number: "95%", label: "Satisfaction Rate" },
-  { number: "3x", label: "More Interviews" },
-  { number: "24/7", label: "Platform Access" },
-];
-
-const benefits = [
-  "Easy PDF resume upload",
-  "Fast and accurate AI analysis",
-  "Relevant keyword recommendations",
-  "Job description compatibility scores",
-  "Resume formatting and structure tips",
-];
-
-const steps = [
-  "Upload your PDF resume",
-  "Paste target job description",
-  "Get analysis & recommendations",
-];
-</script>
 
 <style scoped>
 .max-w-7xl {

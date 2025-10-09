@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import resumePreview from "~/assets/images/resume-review.png";
-
 const config = useRuntimeConfig();
 const route = useRoute();
-const puterStore = usePuterStore();
+const { data: session } = useAuth();
 
 const id = route.params.id as string;
 const feedback = ref<any>(null);
@@ -13,7 +11,7 @@ const isLoading = ref(true);
 const error = ref<string | null>(null);
 
 useSeoMeta({
-  title: "Resumind | Resume Review",
+  title: "Resumatch | Resume Review",
   description: "A detailed overview of your resume",
 });
 
@@ -21,54 +19,46 @@ onMounted(async () => {
   try {
     console.log("Loading resume with id:", id);
 
-    const response: any = await $fetch(`${config.public.apiBase}/${id}`, {
-      method: "post",
-      body: {
-        user_id: "we787fy8sd8f7hd8s",
-      },
-    });
+    const token = session.value?.token;
 
-    const resume = response.data.feedback;
+    if (!token) {
+      error.value = "Not authenticated";
+      isLoading.value = false;
+      return;
+    }
 
-    console.log("Resume data:", resume);
+    const response: any = await $fetch(
+      `${config.public.apiBase}/resume/${session.value.user.id}/${id}`,
+      {
+        method: "get",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-    if (!resume) {
+    console.log("Resume response:", response);
+
+    if (!response.success || !response.data) {
       error.value = "Resume not found";
       isLoading.value = false;
       return;
     }
 
-    const data = resume;
-    console.log("Parsed data:", data);
+    const resume = response.data;
 
-    const resumeBlob = await puterStore.read(data.resumePath);
-    console.log("Resume blob:", resumeBlob);
+    // Set URLs directly from response (Cloudinary URLs)
+    resumeUrl.value = resume.resumePath;
+    imageUrl.value = resume.imagePath;
+    feedback.value = resume.feedback;
 
-    if (resumeBlob) {
-      const pdfBlob = new Blob([resumeBlob], { type: "application/pdf" });
-      resumeUrl.value = URL.createObjectURL(pdfBlob);
-    }
-
-    const imageBlob = await puterStore.read(data.imagePath);
-    console.log("Image blob:", imageBlob);
-
-    if (imageBlob) {
-      imageUrl.value = URL.createObjectURL(imageBlob);
-    }
-
-    feedback.value = data;
     console.log("Feedback:", feedback.value);
-  } catch (err) {
-    console.error("Error loading resume:", JSON.stringify(err));
-    error.value = err instanceof Error ? err.message : "Failed to load resume";
+  } catch (err: any) {
+    console.error("Error loading resume:", err);
+    error.value = err.data?.error || err.message || "Failed to load resume";
   } finally {
     isLoading.value = false;
   }
-});
-
-onUnmounted(() => {
-  if (resumeUrl.value) URL.revokeObjectURL(resumeUrl.value);
-  if (imageUrl.value) URL.revokeObjectURL(imageUrl.value);
 });
 
 const getScoreColor = (score: number) => {
@@ -85,7 +75,7 @@ const getTypeColor = (type: string) => {
 
 const getTypeIcon = (type: string) => {
   if (type == "good") return "mdi-check-all";
-  if (type >= "improve") return "mdi-alert";
+  if (type == "improve") return "mdi-alert";
   return "mdi-emoticon-sad";
 };
 
@@ -103,23 +93,40 @@ const getScoreLabel = (score: number) => {
         <v-btn variant="tonal" class="bg-black text-white" to="/dashboard">
           Back to Dashboard
         </v-btn>
+
         <a
-          class="text-black text-h5 font-weight-bold text-decoration-none"
           href="/"
+          class="text-black text-h5 font-weight-bold text-decoration-none"
         >
-          resumatch.ai
+          resumatch.<strong class="text-green">ai</strong>
         </a>
       </v-container>
     </v-app-bar>
 
     <v-main class="content w-100 h-100">
-      <v-row v-if="feedback">
+      <!-- Error State -->
+      <v-row v-if="error && !isLoading">
+        <v-col
+          cols="12"
+          class="d-flex justify-center align-center"
+          style="min-height: 400px"
+        >
+          <v-container class="w-100 h-100 d-flex justify-center"
+            ><h2>
+              {{ error }}
+            </h2></v-container
+          >
+        </v-col>
+      </v-row>
+
+      <!-- Content -->
+      <v-row v-else-if="feedback && !isLoading">
         <!-- Resume preview -->
         <v-col cols="12" md="6">
           <div class="bg-white pa-4 h-100">
             <a :href="resumeUrl || '#'" target="_blank">
               <img
-                :src="imageUrl || resumePreview"
+                :src="imageUrl!"
                 class="w-100 h-100"
                 title="resume"
                 style="object-fit: cover"
