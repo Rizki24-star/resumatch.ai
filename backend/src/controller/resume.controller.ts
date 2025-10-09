@@ -30,12 +30,12 @@ export const createAnalyis = async (req: Request, res: Response) => {
 
     const absolutePath = path.resolve(file.path);
     console.log("Processing file:", absolutePath);
+
     const resumeText = await extractTextFromPDF(absolutePath);
     const { pdfUrl: resumePath, thumbnailUrl: imagePath } = await uploadPDF(
-      absolutePath
+      absolutePath,
+      false
     );
-    // const resumePath = await uploadFile(absolutePath, "resumes", false);
-    // const imagePath = await uploadFile(absolutePath, "images", false);
 
     await fs.unlink(absolutePath);
     console.log("Temp file deleted");
@@ -65,6 +65,8 @@ export const createAnalyis = async (req: Request, res: Response) => {
       data: {
         id: resume._id,
         feedback: resume.feedback,
+        resumePath,
+        imagePath,
       },
     });
   } catch (error: any) {

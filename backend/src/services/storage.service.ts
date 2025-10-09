@@ -51,25 +51,42 @@ export async function uploadPDF(
 
     await fs.access(absolutePath);
 
-    const result = await cloudinary.uploader.upload(absolutePath, {
-      folder: `resume-analyzer/resumes`,
-      resource_type: "raw", // Upload as raw file
+    // Upload as raw for download
+    const rawResult = await cloudinary.uploader.upload(absolutePath, {
+      folder: `resume-analyzer/resume`,
+      resource_type: "raw",
       use_filename: true,
       unique_filename: true,
     });
 
-    // Generate thumbnail from the raw PDF
-    const thumbnailUrl = cloudinary.url(result.public_id, {
+    // Upload as image for thumbnail generation
+    const imageResult = await cloudinary.uploader.upload(absolutePath, {
+      folder: `resume-analyzer/resume/thumbnails`,
+      resource_type: "image",
+      format: "pdf",
+      use_filename: true,
+      unique_filename: true,
+    });
+
+    // Generate thumbnail
+    const thumbnailUrl = cloudinary.url(imageResult.public_id, {
       resource_type: "image",
       format: "jpg",
       transformation: [
-        { page: 1 }, // Extract first page
+        { page: 1 },
         { width: 800, height: 1200, crop: "fit" },
+        { quality: "auto" },
       ],
     });
 
+    // Only delete if requested
+    if (deleteAfter) {
+      await fs.unlink(absolutePath);
+      console.log("Temp file deleted in uploadPDF");
+    }
+
     return {
-      pdfUrl: result.secure_url,
+      pdfUrl: rawResult.secure_url,
       thumbnailUrl,
     };
   } catch (error: any) {
@@ -77,7 +94,6 @@ export async function uploadPDF(
     throw new Error(`Failed to upload file: ${error.message}`);
   }
 }
-
 export async function uploadBuffer(
   buffer: Buffer,
   folder: "images",
