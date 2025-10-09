@@ -1,8 +1,7 @@
 {
   "version": 2,
   "buildCommand": "cd backend && pnpm install && pnpm build && cd ../frontend && pnpm install && pnpm build",
-  "installCommand": "echo 'Skip root install'",
-  "framework": null,
+  "installCommand": "echo 'skip'",
   "outputDirectory": "frontend/.output/public",
   "rewrites": [
     {
@@ -13,17 +12,5 @@
       "source": "/api/user-auth/:path*",
       "destination": "/api/user-auth-handler"
     }
-  ],
-  "functions": {
-    "api/resume-handler.js": {
-      "runtime": "nodejs20.x",
-      "memory": 1024,
-      "maxDuration": 30
-    },
-    "api/user-auth-handler.js": {
-      "runtime": "nodejs20.x",
-      "memory": 1024,
-      "maxDuration": 30
-    }
-  }
+  ]
 }
