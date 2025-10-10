@@ -1,6 +1,4 @@
 {
-  "version": 2,
-  "buildCommand": "cd backend && npm install --legacy-peer-deps && npm run build && cd ../frontend && npm install --legacy-peer-deps && npm run build",
-  "installCommand": "echo 'skip root install'",
-  "outputDirectory": "frontend/.vercel/output"
+  "buildCommand": "cd backend && npm install --legacy-peer-deps && npm run build && cd ../frontend && npm install --legacy-peer-deps && npm run build && cd .. && cp -r frontend/.vercel/output .vercel/",
+  "installCommand": "echo 'skip'"
 }
