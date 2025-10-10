@@ -1,5 +1,8 @@
 // nuxt.config.ts
 export default defineNuxtConfig({
+  nitro: {
+    preset: "vercel",
+  },
   app: {
     head: {
       script: [{ src: "https://js.puter.com/v2/" }],

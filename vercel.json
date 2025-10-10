@@ -1,15 +1,11 @@
 {
-  "version": 2,
-  "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "outputDirectory": "frontend/.output/public",
   "rewrites": [
     {
-      "source": "/api/resume/:path*",
+      "source": "/api/resume/(.*)",
       "destination": "/api/resume-handler"
     },
     {
-      "source": "/api/user-auth/:path*",
+      "source": "/api/user-auth/(.*)",
       "destination": "/api/user-auth-handler"
     }
   ]
